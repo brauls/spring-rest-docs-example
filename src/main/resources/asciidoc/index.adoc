@@ -3,7 +3,14 @@
 This documentation shows sample request and responses
 assuming the customer service is running at http://localhost:8080:
 
-== GET /customers
+== Payload model
+
+.Customer
+include::{snippets}/customer_controller_test/get_customer_ok/response-fields.adoc[]
+
+== Interfaces
+
+=== GET /customers
 
 .request
 include::{snippets}/customer_controller_test/get_customers_ok/curl-request.adoc[]
@@ -11,7 +18,7 @@ include::{snippets}/customer_controller_test/get_customers_ok/curl-request.adoc[
 .response
 include::{snippets}/customer_controller_test/get_customers_ok/http-response.adoc[]
 
-== GET /customers/<name>
+=== GET /customers/<name>
 
 .request
 include::{snippets}/customer_controller_test/get_customer_ok/curl-request.adoc[]
@@ -22,7 +29,7 @@ include::{snippets}/customer_controller_test/get_customer_ok/http-response.adoc[
 .error response
 include::{snippets}/customer_controller_test/get_customer_notFound/http-response.adoc[]
 
-== POST /customers
+=== POST /customers
 
 .request
 include::{snippets}/customer_controller_test/post_customer_created/curl-request.adoc[]
@@ -33,7 +40,7 @@ include::{snippets}/customer_controller_test/post_customer_created/http-response
 .error response
 include::{snippets}/customer_controller_test/post_customer_conflict/http-response.adoc[]
 
-== DELETE /customers/<name>
+=== DELETE /customers/<name>
 
 .request
 include::{snippets}/customer_controller_test/delete_customer_ok/curl-request.adoc[]

@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -54,7 +56,7 @@ public class CustomerControllerTest {
 
     @Test
     public void getCustomers_shouldReturnCustomersAsJson_withOkStatus() throws Exception {
-        mockMvc.perform(get("/customers")).andDo(print())
+        mockMvc.perform(get("/customers").accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(content().json(testCustomersJson()))
                .andDo(document("{class_name}/get_customers_ok"));
@@ -63,16 +65,21 @@ public class CustomerControllerTest {
     @Test
     public void getCustomer_whenExists_shouldReturnCustomerAsJson_withOkStatus() throws Exception {
         when(customerService.getCustomer("customerA")).thenReturn(Optional.of(testCustomer()));
-        mockMvc.perform(get("/customers/customerA")).andDo(print())
+        mockMvc.perform(get("/customers/customerA").accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(content().json(testCustomerJson()))
-               .andDo(document("{class_name}/get_customer_ok"));
+               .andDo(document(
+                   "{class_name}/get_customer_ok",
+                   responseFields(
+                       fieldWithPath("name").description("The name of the customer"),
+                       fieldWithPath("mailAddress").description("The eMail address of the customer"),
+                       fieldWithPath("category").description("The category of the customer; 1 for highest importance, 3 for lowest"))));
     }
 
     @Test
     public void getCustomer_whenNotExists_shouldReturnErrorResponse_withNotFoundStatus() throws Exception {
         when(customerService.getCustomer("customerA")).thenReturn(Optional.empty());
-        mockMvc.perform(get("/customers/customerA")).andDo(print())
+        mockMvc.perform(get("/customers/customerA").accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isNotFound())
                .andExpect(content().json(notFoundResponseJson()))
                .andDo(document("{class_name}/get_customer_notFound"));
@@ -82,7 +89,6 @@ public class CustomerControllerTest {
     public void addCustomer_whenNotExists_shouldReturnCreatedStatus() throws Exception {
         doNothing().when(customerService).addCustomer(any());
         mockMvc.perform(post("/customers").content(testCustomerJson()).contentType(MediaType.APPLICATION_JSON))
-               .andDo(print())
                .andExpect(status().isCreated())
                .andDo(document("{class_name}/post_customer_created"));
     }
@@ -92,7 +98,6 @@ public class CustomerControllerTest {
         final String message = "A customer with name customerA already exists";
         doThrow(new CustomerAlreadyExistsException(message)).when(customerService).addCustomer(any());
         mockMvc.perform(post("/customers").content(testCustomerJson()).contentType(MediaType.APPLICATION_JSON))
-               .andDo(print())
                .andExpect(status().isConflict())
                .andExpect(content().json(conflictResponseJson(message)))
                .andDo(document("{class_name}/post_customer_conflict"));
@@ -102,7 +107,6 @@ public class CustomerControllerTest {
     public void deleteCustomer_whenExists_shouldReturnOkStatus() throws Exception {
         doNothing().when(customerService).deleteCustomer("customerA");
         mockMvc.perform(delete("/customers/customerA"))
-               .andDo(print())
                .andExpect(status().isOk())
                .andDo(document("{class_name}/delete_customer_ok"));
     }
@@ -112,7 +116,6 @@ public class CustomerControllerTest {
         final String message = "A customer with name customerA does not exist";
         doThrow(new CustomerNotFoundException(message)).when(customerService).deleteCustomer("customerA");
         mockMvc.perform(delete("/customers/customerA"))
-               .andDo(print())
                .andExpect(status().isNotFound())
                .andExpect(content().json(notFoundResponseJson()))
                .andDo(document("{class_name}/delete_customer_notFound"));
