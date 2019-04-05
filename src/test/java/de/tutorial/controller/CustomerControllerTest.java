@@ -57,7 +57,7 @@ public class CustomerControllerTest {
         mockMvc.perform(get("/customers")).andDo(print())
                .andExpect(status().isOk())
                .andExpect(content().json(testCustomersJson()))
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/get_customers_ok"));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class CustomerControllerTest {
         mockMvc.perform(get("/customers/customerA")).andDo(print())
                .andExpect(status().isOk())
                .andExpect(content().json(testCustomerJson()))
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/get_customer_ok"));
     }
 
     @Test
@@ -75,7 +75,7 @@ public class CustomerControllerTest {
         mockMvc.perform(get("/customers/customerA")).andDo(print())
                .andExpect(status().isNotFound())
                .andExpect(content().json(notFoundResponseJson()))
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/get_customer_notFound"));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class CustomerControllerTest {
         mockMvc.perform(post("/customers").content(testCustomerJson()).contentType(MediaType.APPLICATION_JSON))
                .andDo(print())
                .andExpect(status().isCreated())
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/post_customer_created"));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class CustomerControllerTest {
                .andDo(print())
                .andExpect(status().isConflict())
                .andExpect(content().json(conflictResponseJson(message)))
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/post_customer_conflict"));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class CustomerControllerTest {
         mockMvc.perform(delete("/customers/customerA"))
                .andDo(print())
                .andExpect(status().isOk())
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/delete_customer_ok"));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class CustomerControllerTest {
                .andDo(print())
                .andExpect(status().isNotFound())
                .andExpect(content().json(notFoundResponseJson()))
-               .andDo(document("customers"));
+               .andDo(document("{class_name}/delete_customer_notFound"));
     }
 
     private static Customer testCustomer() {
