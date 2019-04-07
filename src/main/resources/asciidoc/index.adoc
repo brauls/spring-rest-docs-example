@@ -1,6 +1,6 @@
 = Customer service documentation
 
-This documentation shows sample request and responses
+This documentation shows sample requests and responses
 assuming the customer service is running at http://localhost:8080:
 
 == Payload model
@@ -23,6 +23,8 @@ include::{snippets}/customer_controller_test/get_customers_ok/http-response.adoc
 .request
 include::{snippets}/customer_controller_test/get_customer_ok/curl-request.adoc[]
 
+include::{snippets}/customer_controller_test/get_customer_ok/path-parameters.adoc[]
+
 .response
 include::{snippets}/customer_controller_test/get_customer_ok/http-response.adoc[]
 
@@ -44,6 +46,8 @@ include::{snippets}/customer_controller_test/post_customer_conflict/http-respons
 
 .request
 include::{snippets}/customer_controller_test/delete_customer_ok/curl-request.adoc[]
+
+include::{snippets}/customer_controller_test/delete_customer_ok/path-parameters.adoc[]
 
 .response
 include::{snippets}/customer_controller_test/delete_customer_ok/http-response.adoc[]

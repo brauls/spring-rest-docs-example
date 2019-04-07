@@ -1,12 +1,12 @@
 package de.tutorial.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import de.tutorial.exception.CustomerAlreadyExistsException;
+import de.tutorial.exception.CustomerNotFoundException;
+import de.tutorial.model.Customer;
+import de.tutorial.model.ErrorResponse;
+import de.tutorial.service.CustomerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,27 +17,23 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import de.tutorial.exception.CustomerAlreadyExistsException;
-import de.tutorial.exception.CustomerNotFoundException;
-import de.tutorial.model.Customer;
-import de.tutorial.model.ErrorResponse;
-import de.tutorial.service.CustomerService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import static de.tutorial.controller.RestControllerExceptionHandler.ALREADY_EXISTS_HINT;
 import static de.tutorial.controller.RestControllerExceptionHandler.NOT_FOUND_HINT;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(CustomerController.class)
@@ -65,24 +61,32 @@ public class CustomerControllerTest {
     @Test
     public void getCustomer_whenExists_shouldReturnCustomerAsJson_withOkStatus() throws Exception {
         when(customerService.getCustomer("customerA")).thenReturn(Optional.of(testCustomer()));
-        mockMvc.perform(get("/customers/customerA").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/customers/{name}", "customerA").accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(content().json(testCustomerJson()))
                .andDo(document(
                    "{class_name}/get_customer_ok",
                    responseFields(
-                       fieldWithPath("name").description("The name of the customer"),
-                       fieldWithPath("mailAddress").description("The eMail address of the customer"),
-                       fieldWithPath("category").description("The category of the customer; 1 for highest importance, 3 for lowest"))));
+                       fieldWithPath("name")
+                           .description("The name of the customer"),
+                       fieldWithPath("mailAddress")
+                           .description("The eMail address of the customer"),
+                       fieldWithPath("category")
+                           .description("The category of the customer; 1 for highest importance, 3 for lowest")),
+                   pathParameters(
+                       parameterWithName("name").description("The name of the customer that is requested"))));
     }
 
     @Test
     public void getCustomer_whenNotExists_shouldReturnErrorResponse_withNotFoundStatus() throws Exception {
         when(customerService.getCustomer("customerA")).thenReturn(Optional.empty());
-        mockMvc.perform(get("/customers/customerA").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/customers/{name}", "customerA").accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isNotFound())
                .andExpect(content().json(notFoundResponseJson()))
-               .andDo(document("{class_name}/get_customer_notFound"));
+               .andDo(document(
+                   "{class_name}/get_customer_notFound",
+                   pathParameters(
+                       parameterWithName("name").description("The name of the customer that is requested"))));
     }
 
     @Test
@@ -106,19 +110,25 @@ public class CustomerControllerTest {
     @Test
     public void deleteCustomer_whenExists_shouldReturnOkStatus() throws Exception {
         doNothing().when(customerService).deleteCustomer("customerA");
-        mockMvc.perform(delete("/customers/customerA"))
+        mockMvc.perform(delete("/customers/{name}", "customerA"))
                .andExpect(status().isOk())
-               .andDo(document("{class_name}/delete_customer_ok"));
+               .andDo(document(
+                   "{class_name}/delete_customer_ok",
+                   pathParameters(
+                       parameterWithName("name").description("The name of the customer that shall be deleted"))));
     }
 
     @Test
     public void deleteCustomer_whenNotExists_shouldReturnErrorResponse_withNotFoundStatus() throws Exception {
         final String message = "A customer with name customerA does not exist";
         doThrow(new CustomerNotFoundException(message)).when(customerService).deleteCustomer("customerA");
-        mockMvc.perform(delete("/customers/customerA"))
+        mockMvc.perform(delete("/customers/{name}", "customerA"))
                .andExpect(status().isNotFound())
                .andExpect(content().json(notFoundResponseJson()))
-               .andDo(document("{class_name}/delete_customer_notFound"));
+               .andDo(document(
+                   "{class_name}/delete_customer_notFound",
+                   pathParameters(
+                       parameterWithName("name").description("The name of the customer that shall be deleted"))));
     }
 
     private static Customer testCustomer() {
